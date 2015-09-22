@@ -31,6 +31,9 @@ static char DZNWebViewControllerKVOContext = 0;
 @property (nonatomic, weak) UINavigationBar *navigationBar;
 @property (nonatomic, weak) UIView *navigationBarSuperView;
 
+@property (nonatomic, assign) BOOL viewWillAppearEverCalled;
+@property (nonatomic, assign) BOOL viewDidAppearEverCalled;
+
 @end
 
 @implementation DZNWebViewController
@@ -95,26 +98,28 @@ static char DZNWebViewControllerKVOContext = 0;
 {
     [super viewWillAppear:animated];
     
-    [UIView performWithoutAnimation:^{
-        static dispatch_once_t willAppearConfig;
-        dispatch_once(&willAppearConfig, ^{
+    if (!self.viewWillAppearEverCalled) {
+        [UIView performWithoutAnimation:^{
             [self configureToolBars];
-        });
-    }];
+        }];
+    }
     
     if (!self.webView.URL) {
         [self loadURL:self.URL];
     }
+    
+    self.viewWillAppearEverCalled = YES;
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
-    static dispatch_once_t didAppearConfig;
-    dispatch_once(&didAppearConfig, ^{
+    if (!self.viewDidAppearEverCalled) {
         [self configureBarItemsGestures];
-    });
+    }
+    
+    self.viewDidAppearEverCalled = YES;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
